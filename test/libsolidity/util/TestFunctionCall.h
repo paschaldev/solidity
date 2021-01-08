@@ -14,8 +14,9 @@
 
 #pragma once
 
-#include <test/libsolidity/util/TestFileParser.h>
+#include <test/libsolidity/TestHook.h>
 #include <test/libsolidity/util/SoltestErrors.h>
+#include <test/libsolidity/util/TestFileParser.h>
 
 #include <liblangutil/Exceptions.h>
 #include <libsolutil/AnsiColorized.h>
@@ -81,6 +82,11 @@ public:
 	void setRawBytes(const bytes _rawBytes) { m_rawBytes = _rawBytes; }
 	void setContractABI(Json::Value _contractABI) { m_contractABI = std::move(_contractABI); }
 
+	void setPreviousCall(TestFunctionCall* _call) { m_previousCall = _call; }
+	TestFunctionCall* previousCall() const { return m_previousCall; }
+
+	void setTestHooks(std::vector<std::unique_ptr<TestHook>>* testHooks) { m_testHooks = testHooks; }
+
 private:
 	/// Tries to format the given `bytes`, applying the detected ABI types that have be set for each parameter.
 	/// Throws if there's a mismatch in the size of `bytes` and the desired formats that are specified
@@ -131,6 +137,8 @@ private:
 	Json::Value m_contractABI;
 	/// Flags that the test failed because the called function is not known to exist on the contract.
 	bool m_calledNonExistingFunction = false;
+	TestFunctionCall* m_previousCall = nullptr;
+	std::vector<std::unique_ptr<TestHook>>* m_testHooks = nullptr;
 };
 
 }
