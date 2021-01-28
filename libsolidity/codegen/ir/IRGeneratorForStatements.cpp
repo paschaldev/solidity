@@ -1041,6 +1041,10 @@ void IRGeneratorForStatements::endVisit(FunctionCall const& _functionCall)
 		m_code << templ.render();
 		break;
 	}
+	case FunctionType::Kind::Error:
+	{
+		solAssert(false, "");
+	}
 	case FunctionType::Kind::Assert:
 	case FunctionType::Kind::Require:
 	{
@@ -2273,6 +2277,11 @@ void IRGeneratorForStatements::endVisit(Identifier const& _identifier)
 	}
 	else if (dynamic_cast<EventDefinition const*>(declaration))
 	{
+		// no-op
+	}
+	else if (dynamic_cast<ErrorDefinition const*>(declaration))
+	{
+		// TODO should this rather be an assertion? Can we get here?
 		// no-op
 	}
 	else if (dynamic_cast<EnumDefinition const*>(declaration))
