@@ -103,13 +103,15 @@ LanguageServer::LanguageServer(Transport& _client, Logger _logger):
 	m_client{_client},
 	m_handlers{
 		{"cancelRequest", [](auto, auto) {/*don't do anything for now, as we're synchronous*/}},
-		{"initialize", bind(&LanguageServer::handle_initializeRequest, this, _1, _2)},
-		{"initialized", [this](auto, auto) { initialized(); }},
+		{"initialize", bind(&LanguageServer::handle_initialize, this, _1, _2)},
+		{"initialized", {} },
 		{"shutdown", [this](auto, auto) { m_shutdownRequested = true; }},
 		{"workspace/didChangeConfiguration", bind(&LanguageServer::handle_workspace_didChangeConfiguration, this, _1, _2)},
 		{"textDocument/didOpen", bind(&LanguageServer::handle_textDocument_didOpen, this, _1, _2)},
 		{"textDocument/didChange", bind(&LanguageServer::handle_textDocument_didChange, this, _1, _2)},
-		{"textDocument/didClose", bind(&LanguageServer::handle_textDocument_didClose, this, _1, _2)},
+		{"textDocument/didClose", [this](auto, Json::Value const& _args) {
+			documentClosed(extractPathFromFileURI(_args["textDocument"]["uri"].asString()).value());
+		}},
 		{"textDocument/definition", bind(&LanguageServer::handle_textDocument_definition, this, _1, _2)},
 		{"textDocument/documentHighlight", bind(&LanguageServer::handle_textDocument_highlight, this, _1, _2)},
 		{"textDocument/references", bind(&LanguageServer::handle_textDocument_references, this, _1, _2)},
@@ -117,16 +119,6 @@ LanguageServer::LanguageServer(Transport& _client, Logger _logger):
 	m_logger{std::move(_logger)},
 	m_vfs()
 {
-}
-
-ServerId LanguageServer::initialize(string _rootPath, vector<WorkspaceFolder> /*_workspaceFolders*/)
-{
-	auto const fspath = boost::filesystem::path(_rootPath);
-
-	m_basePath = fspath;
-	m_allowedDirectories.push_back(fspath);
-
-	return {"solc", string(solidity::frontend::VersionNumber)};
 }
 
 void LanguageServer::changeConfiguration(Json::Value const& _settings)
@@ -150,27 +142,6 @@ void LanguageServer::changeConfiguration(Json::Value const& _settings)
 	}
 }
 
-void LanguageServer::initialized()
-{
-	// NB: this means the client has finished initializing. Now we could maybe start sending
-	// events to the client.
-	log("LanguageServer: Client initialized");
-}
-
-void LanguageServer::documentOpened(string const& _path, string _languageId, int _documentVersion, std::string _contents)
-{
-	log("LanguageServer: Opening document: " + _path);
-
-	vfs::File const& file = m_vfs.insert(
-		_path,
-		_languageId,
-		_documentVersion,
-		_contents
-	);
-
-	validate(file);
-}
-
 void LanguageServer::documentContentUpdated(string const& _path, std::optional<int> _version, Range _range, std::string const& _text)
 {
 	// TODO: all this info is actually unrelated to solidity/lsp specifically except knowing that
@@ -192,15 +163,6 @@ void LanguageServer::documentContentUpdated(string const& _path, std::optional<i
 #endif
 	file->modify(_range, _text);
 
-}
-
-void LanguageServer::documentContentUpdated(string const& _path)
-{
-	auto file = m_vfs.find(_path);
-	if (!file)
-		log("LanguageServer: File to be modified not opened \"" + _path + "\"");
-	else
-		validate(*file);
 }
 
 void LanguageServer::documentContentUpdated(string const& _path, optional<int> _version, string const& _fullContentChange)
@@ -670,7 +632,7 @@ bool LanguageServer::run()
 		return false;
 }
 
-void LanguageServer::handle_initializeRequest(MessageId _id, Json::Value const& _args)
+void LanguageServer::handle_initialize(MessageId _id, Json::Value const& _args)
 {
 	string rootPath;
 	if (Json::Value uri = _args["rootUri"])
@@ -689,7 +651,11 @@ void LanguageServer::handle_initializeRequest(MessageId _id, Json::Value const& 
 			m_trace = Trace::Off;
 	}
 
-	std::vector<WorkspaceFolder> workspaceFolders; // initial configured workspace folders
+#if 0 // Currently not used.
+	// At least VScode supports more than one workspace.
+	// This is the list of initial configured workspace folders
+	struct WorkspaceFolder { std::string name; std::string path; };
+	std::vector<WorkspaceFolder> workspaceFolders;
 	if (Json::Value folders = _args["workspaceFolders"]; folders)
 	{
 		for (Json::Value folder: folders)
@@ -700,11 +666,15 @@ void LanguageServer::handle_initializeRequest(MessageId _id, Json::Value const& 
 			workspaceFolders.emplace_back(move(wsFolder));
 		}
 	}
+#endif
 
 	// TODO: ClientCapabilities
 	// ... Do we actually care? Not in the initial PR.
 
-	auto const info = initialize(move(rootPath), move(workspaceFolders));
+	auto const fspath = boost::filesystem::path(rootPath);
+
+	m_basePath = fspath;
+	m_allowedDirectories.push_back(fspath);
 
 	if (_args["initializationOptions"].isObject())
 		changeConfiguration(_args["initializationOptions"]);
@@ -712,12 +682,8 @@ void LanguageServer::handle_initializeRequest(MessageId _id, Json::Value const& 
 	// {{{ encoding
 	Json::Value replyArgs;
 
-	if (!info.serverName.empty())
-		replyArgs["serverInfo"]["name"] = info.serverName;
-
-	if (!info.serverVersion.empty())
-		replyArgs["serverInfo"]["version"] = info.serverVersion;
-
+	replyArgs["serverInfo"]["name"] = "solc";
+	replyArgs["serverInfo"]["version"] = string(solidity::frontend::VersionNumber);
 	replyArgs["hoverProvider"] = true;
 	replyArgs["capabilities"]["hoverProvider"] = true;
 	replyArgs["capabilities"]["textDocumentSync"]["openClose"] = true;
@@ -758,7 +724,16 @@ void LanguageServer::handle_textDocument_didOpen(MessageId /*_id*/, Json::Value 
 	auto const version = _args["textDocument"]["version"].asInt();
 	auto const text = _args["textDocument"]["text"].asString();
 
-	documentOpened(path, languageId, version, text);
+	log("LanguageServer: Opening document: " + path);
+
+	vfs::File const& file = m_vfs.insert(
+		path,
+		languageId,
+		version,
+		text
+	);
+
+	validate(file);
 
 	// no encoding
 }
@@ -799,12 +774,13 @@ void LanguageServer::handle_textDocument_didChange(MessageId /*_id*/, Json::Valu
 	}
 
 	if (!contentChanges.empty())
-		documentContentUpdated(path); // tell LSP impl we're done with content updates.
-}
-
-void LanguageServer::handle_textDocument_didClose(MessageId /*_id*/, Json::Value const& _args)
-{
-	documentClosed(extractPathFromFileURI(_args["textDocument"]["uri"].asString()).value());
+	{
+		auto file = m_vfs.find(path);
+		if (!file)
+			log("LanguageServer: File to be modified not opened \"" + path + "\"");
+		else
+			validate(*file);
+	}
 }
 
 void LanguageServer::handle_textDocument_definition(MessageId _id, Json::Value const& _args)
@@ -964,7 +940,7 @@ void LanguageServer::handleMessage(Json::Value const& _jsonMessage)
 			? MessageId{_jsonMessage["id"].asString()}
 			: MessageId{};
 
-	if (auto const handler = m_handlers.find(methodName); handler != m_handlers.end())
+	if (auto const handler = m_handlers.find(methodName); handler != m_handlers.end() && handler->second)
 	{
 		Json::Value const& jsonArgs = _jsonMessage["params"];
 		handler->second(id, jsonArgs);
@@ -972,7 +948,6 @@ void LanguageServer::handleMessage(Json::Value const& _jsonMessage)
 	else
 		error(id, ErrorCode::MethodNotFound, "Unknown method " + methodName);
 }
-
 // }}}
 
 } // namespace solidity

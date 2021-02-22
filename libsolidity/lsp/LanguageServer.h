@@ -63,8 +63,6 @@ public:
 	/// @param _logger special logger used for debugging the LSP.
 	explicit LanguageServer(Transport& _client, Logger _logger);
 
-	//std::vector<boost::filesystem::path>& allowedDirectories() noexcept { return m_allowedDirectories; }
-
 	/// performs a validation run.
 	///
 	/// update diagnostics and also pushes any updates to the client.
@@ -79,30 +77,27 @@ public:
 	/// @return boolean indicating normal or abnormal termination.
 	bool run();
 
+	/// Handles a single JSON-RPC message in string form.
+	void handleMessage(std::string const& _message);
+
+	/// Handles a single JSON-RPC message.
+	void handleMessage(Json::Value const& _jsonMessage);
+
 protected:
-	void handle_initializeRequest(MessageId _id, Json::Value const& _args);
+	void handle_initialize(MessageId _id, Json::Value const& _args);
 	void handle_exit(MessageId _id, Json::Value const& _args);
 	void handle_workspace_didChangeConfiguration(MessageId _id, Json::Value const& _args);
 	void handle_textDocument_didOpen(MessageId _id, Json::Value const& _args);
 	void handle_textDocument_didChange(MessageId _id, Json::Value const& _args);
-	void handle_textDocument_didClose(MessageId _id, Json::Value const& _args);
 	void handle_textDocument_definition(MessageId _id, Json::Value const& _args);
 	void handle_textDocument_highlight(MessageId _id, Json::Value const& _args);
 	void handle_textDocument_references(MessageId _id, Json::Value const& _args);
 
 	// {{{ Client-to-Server messages
-	/// Invoked by the client to trigger server initialization.
-	ServerId initialize(std::string _rootPath, std::vector<WorkspaceFolder> _workspaceFolders);
-
-	/// Notification being sent when the client has finished initialization.
-	void initialized();
-
 	/// Invoked when the server user-supplied configuration changes (initiated by the client).
 	void changeConfiguration(Json::Value const&);
-	void documentOpened(std::string const& _path, std::string _languageId, int _documentVersion, std::string _contents);
 	void documentContentUpdated(std::string const& _path, std::optional<int> _documentVersion, std::string const& _fullContentChange);
 	void documentContentUpdated(std::string const& _path, std::optional<int> _version, Range _range, std::string const& _text);
-	void documentContentUpdated(std::string const& _path);
 	void documentClosed(std::string const& _path);
 
 	/// IDE action: "Go to definition"
@@ -123,12 +118,6 @@ protected:
 	/// @returns all references as document ranges as well as their use kind (read fraom, written to, other text).
 	std::vector<Location> references(DocumentPosition _documentPosition);
 	// }}}
-
-	/// Handles a JSON-RPC message in string form.
-	void handleMessage(std::string const& _message);
-
-	/// Handles a JSON-RPC message.
-	void handleMessage(Json::Value const& _jsonMessage);
 
 	/// Sends a message to the client.
 	///
