@@ -145,9 +145,6 @@ bool FunctionCallGraphBuilder::visit(FunctionCall const& _functionCall)
 	auto const* functionType = dynamic_cast<FunctionType const*>(_functionCall.expression().annotation().type);
 	solAssert(functionType, "");
 
-	// TODO: Is this actually guaranteed?
-	solAssert(functionType->kind() != FunctionType::Kind::Declaration, "");
-
 	if (functionType->kind() == FunctionType::Kind::Internal && !_functionCall.expression().annotation().calledDirectly)
 		// If it's not a direct call, we don't really know which function will be called (it may even
 		// change at runtime). All we can do is to add an edge to the dispatch which in turn has
