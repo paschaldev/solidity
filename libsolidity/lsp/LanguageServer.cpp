@@ -559,13 +559,17 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
 		output = ReferenceCollector::collect(varDecl, sourceUnit, varDecl->name());
 	}
+	else if (auto const* structDef = dynamic_cast<StructDefinition const*>(sourceNode))
+	{
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		output = ReferenceCollector::collect(structDef, sourceUnit, structDef->name());
+	}
 	else if (auto const* memberAccess = dynamic_cast<MemberAccess const*>(sourceNode))
 	{
 		TypePointer const type = memberAccess->expression().annotation().type;
 		if (auto const ttype = dynamic_cast<TypeType const*>(type))
 		{
 			auto const memberName = memberAccess->memberName();
-
 			auto const sourceName = _documentPosition.path;
 			frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
 
@@ -586,7 +590,10 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 				trace("semanticHighlight: not an EnumType");
 		}
 		else
-			trace("semanticHighlight: member type is NULL");
+		{
+			// TODO: StructType, ...
+			trace("semanticHighlight: member type is: "s + (type ? typeid(*type).name() : "NULL"));
+		}
 
 		// TODO: If the cursor os positioned on top of a type name, then all other symbols matching
 		// this type should be highlighted (clangd does so, too).
