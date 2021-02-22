@@ -122,8 +122,7 @@ FunctionCallGraphBuilder::ContractCallGraph FunctionCallGraphBuilder::buildDeplo
 	// All functions present in internal dispatch at creation time could potentially be pointers
 	// assigned to state variables and as such may be reachable after deployment as well.
 	builder.m_currentNode = SpecialNode::InternalDispatch;
-	set<Node, CompareByID> emptySet;
-	for (Node const& dispatchTarget: valueOrDefault(_creationGraph.edges, SpecialNode::InternalDispatch, emptySet))
+	for (Node const& dispatchTarget: valueOrDefault(_creationGraph.edges, SpecialNode::InternalDispatch, {}))
 	{
 		solAssert(!holds_alternative<SpecialNode>(dispatchTarget), "");
 		solAssert(get<CallableDeclaration const*>(dispatchTarget) != nullptr, "");
