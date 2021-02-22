@@ -20,7 +20,6 @@
 #include <libsolidity/interface/CompilerStack.h>
 #include <libsolidity/interface/FileReader.h>
 #include <libsolidity/lsp/LSPTypes.h>
-#include <libsolidity/lsp/Range.h>
 #include <libsolidity/lsp/ReferenceCollector.h>
 #include <libsolidity/lsp/Transport.h>
 #include <libsolidity/lsp/VFS.h>

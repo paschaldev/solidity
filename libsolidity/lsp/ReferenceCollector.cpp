@@ -51,7 +51,7 @@ std::vector<DocumentHighlight> ReferenceCollector::collect(
 	// TODO if vardecl, just use decl's scope (for lower overhead).
 	auto collector = ReferenceCollector(*_declaration, _sourceIdentifierName);
 	_ast.accept(collector);
-	return collector.take();
+	return move(collector.m_result);
 }
 
 bool ReferenceCollector::visit(frontend::ImportDirective const& _import)

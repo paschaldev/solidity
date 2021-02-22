@@ -473,8 +473,6 @@ vector<Location> LanguageServer::references(DocumentPosition _documentPosition)
 
 		if (auto decl = sourceIdentifier->annotation().referencedDeclaration)
 			findAllReferences(decl, decl->name(), sourceUnit, _documentPosition.path, output);
-		else
-			trace("references: referencedDeclaration == NULL");
 
 		for (auto const decl: sourceIdentifier->annotation().candidateDeclarations)
 			findAllReferences(decl, decl->name(), sourceUnit, _documentPosition.path, output);
@@ -506,7 +504,7 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 	if (!file)
 	{
 		// reply(_params.requestId, output);
-		// error(_documentPosition.requestId, ErrorCode::RequestCancelled, "not implemented yet.");
+		// m_client.error(_documentPosition.requestId, ErrorCode::RequestCancelled, "not implemented yet.");
 		return {};
 	}
 
@@ -519,7 +517,7 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 	if (!sourceNode)
 	{
 		trace("semanticHighlight: AST node not found");
-		// error(_documentPosition.requestId, ErrorCode::InvalidParams, "Symbol not found.");
+		// m_client.error(_documentPosition.requestId, ErrorCode::InvalidParams, "Symbol not found.");
 		return {};
 	}
 
@@ -895,11 +893,6 @@ void LanguageServer::pushDiagnostics(string const& _path, optional<int> _version
 	m_client.notify("textDocument/publishDiagnostics", params);
 }
 
-void LanguageServer::error(MessageId const& _id, ErrorCode _code, string  const& _message)
-{
-	m_client.error(_id, _code, _message);
-}
-
 void LanguageServer::log(string const& _message)
 {
 	if (m_trace < Trace::Messages)
@@ -946,7 +939,7 @@ void LanguageServer::handleMessage(Json::Value const& _jsonMessage)
 		handler->second(id, jsonArgs);
 	}
 	else
-		error(id, ErrorCode::MethodNotFound, "Unknown method " + methodName);
+		m_client.error(id, ErrorCode::MethodNotFound, "Unknown method " + methodName);
 }
 // }}}
 

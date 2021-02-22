@@ -17,18 +17,97 @@
 // SPDX-License-Identifier: GPL-3.0
 #pragma once
 
-#include <libsolidity/lsp/Range.h>
+#include <optional>
+#include <ostream>
 #include <string>
+#include <vector>
 
 namespace solidity::lsp
 {
 
-enum class Trace { Off, Messages, Verbose };
+/**
+ * Position in a text document expressed as zero-based line and zero-based
+ * character offset. A position is between two characters like an ‘insert’ cursor
+ * in a editor. Special values like for example -1 to denote the end of a line
+ * are not supported.
+ */
+struct Position
+{
+	int line;    // zero-based index to the line
+	int column;  // zero-based index to the column
 
-struct WorkspaceFolder {
-	std::string name; // The name of the workspace folder. Used to refer to this workspace folder in the user interface.
-	std::string path; // The associated file path for this workspace folder.
+	constexpr bool operator==(Position _other) const noexcept { return line == _other.line && column == _other.column; }
+	constexpr bool operator!=(Position _other) const noexcept { return !(*this == _other); }
 };
+
+inline std::ostream& operator<<(std::ostream& _output, Position _pos)
+{
+	return _output << '(' << (_pos.line + 1) << (_pos.column + 1) << ')';
+}
+
+/**
+ * A range in a text document expressed as (zero-based) start and end positions.
+ *
+ * A range is comparable to a selection in an editor. Therefore the end position is exclusive.
+ * If you want to specify a range that contains a line including the line ending character(s)
+ * then use an end position denoting the start of the next line. For example:
+ *
+ * {
+ *   start: { line: 5, character: 23 },
+ *   end : { line 6, character : 0 }
+ * }
+ */
+struct Range
+{
+	struct LineNumIterator {
+		int current;
+		int lastLine;
+
+		/// Determines whether or not this is an inner line or a boundary line (first/last).
+		bool inner = false;
+
+		constexpr int operator*() const noexcept { return current; }
+
+		constexpr LineNumIterator& operator++() noexcept
+		{
+			++current;
+			if (current + 1 < lastLine)
+				inner = true;
+			return *this;
+		}
+
+		constexpr LineNumIterator& operator++(int) noexcept
+		{
+			return ++*this;
+		}
+
+		constexpr bool operator==(LineNumIterator const& _rhs) const noexcept
+		{
+			return current == _rhs.current;
+		}
+
+		constexpr bool operator!=(LineNumIterator const& _rhs) const noexcept
+		{
+			return !(*this == _rhs);
+		}
+	};
+
+	/// Returns an iterator for iterating through the line numbers of this range.
+	[[nodiscard]] constexpr LineNumIterator lineNumbers() const noexcept
+	{
+		return LineNumIterator{start.line, end.line + 1};
+	}
+
+	Position start;
+	Position end;
+};
+
+inline std::ostream& operator<<(std::ostream& _output, Range _range)
+{
+	return _output << _range.start << ".." << _range.end;
+}
+
+enum class Trace { Off, Messages, Verbose };
 
 struct DocumentPosition {
 	std::string path;

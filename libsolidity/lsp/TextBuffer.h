@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: GPL-3.0
 #pragma once
 
-#include <libsolidity/lsp/Range.h>
+#include <libsolidity/lsp/LSPTypes.h>
 #include <optional>
 #include <ostream>
 #include <string>

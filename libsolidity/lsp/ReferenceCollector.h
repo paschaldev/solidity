@@ -26,15 +26,8 @@ namespace solidity::lsp
 
 class ReferenceCollector: public frontend::ASTConstVisitor
 {
-private:
-	frontend::Declaration const& m_declaration;
-	std::string const& m_sourceIdentifierName;
-	std::vector<DocumentHighlight> m_result;
-
 public:
 	ReferenceCollector(frontend::Declaration const& _declaration, std::string const& _sourceIdentifierName);
-
-	std::vector<DocumentHighlight> take() { return std::move(m_result); }
 
 	static std::vector<DocumentHighlight> collect(
 		frontend::Declaration const* _declaration,
@@ -50,6 +43,11 @@ public:
 private:
 	bool tryAddReference(frontend::Declaration const* _declaration, solidity::langutil::SourceLocation const& _location);
 	void addReference(solidity::langutil::SourceLocation const& _location);
+
+private:
+	frontend::Declaration const& m_declaration;
+	std::string const& m_sourceIdentifierName;
+	std::vector<DocumentHighlight> m_result;
 };
 
 } // end namespace
