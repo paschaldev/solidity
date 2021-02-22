@@ -483,6 +483,16 @@ vector<Location> LanguageServer::references(DocumentPosition _documentPosition)
 		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
 		findAllReferences(decl, decl->name(), sourceUnit, _documentPosition.path, output);
 	}
+	else if (auto const* functionDefinition = dynamic_cast<FunctionDefinition const*>(sourceNode))
+	{
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		findAllReferences(functionDefinition, functionDefinition->name(), sourceUnit, _documentPosition.path, output);
+	}
+	else if (auto const* enumDef = dynamic_cast<EnumDefinition const*>(sourceNode))
+	{
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		findAllReferences(enumDef, enumDef->name(), sourceUnit, _documentPosition.path, output);
+	}
 	else if (auto const memberAccess = dynamic_cast<MemberAccess const*>(sourceNode))
 	{
 		if (Declaration const* decl = memberAccess->annotation().referencedDeclaration)
@@ -493,7 +503,7 @@ vector<Location> LanguageServer::references(DocumentPosition _documentPosition)
 		}
 	}
 	else
-		trace("references: not an identifier");
+		trace("references: not an identifier: "s + typeid(*sourceNode).name());
 
 	return output;
 }
@@ -534,8 +544,6 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 		auto const sourceName = _documentPosition.path;
 		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
 
-		vector<DocumentHighlight> output;
-
 		if (sourceIdentifier->annotation().referencedDeclaration)
 			output += ReferenceCollector::collect(sourceIdentifier->annotation().referencedDeclaration, sourceUnit, sourceIdentifier->name());
 
@@ -544,8 +552,6 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 
 		for (Declaration const* declaration: sourceIdentifier->annotation().overloadedDeclarations)
 			output += ReferenceCollector::collect(declaration, sourceUnit, sourceIdentifier->name());
-
-		return output;
 	}
 	else if (auto const* varDecl = dynamic_cast<VariableDeclaration const*>(sourceNode))
 	{
@@ -592,8 +598,24 @@ vector<DocumentHighlight> LanguageServer::semanticHighlight(DocumentPosition _do
 		// 	output = findAllReferences(declaration, sourceUnit);
 		// }
 	}
+	else if (auto const* identifierPath = dynamic_cast<IdentifierPath const*>(sourceNode))
+	{
+		solAssert(!identifierPath->path().empty(), "");
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		output += ReferenceCollector::collect(identifierPath->annotation().referencedDeclaration, sourceUnit, identifierPath->path().back());
+	}
+	else if (auto const* functionDefinition = dynamic_cast<FunctionDefinition const*>(sourceNode))
+	{
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		output += ReferenceCollector::collect(functionDefinition, sourceUnit, functionDefinition->name());
+	}
+	else if (auto const* enumDef = dynamic_cast<EnumDefinition const*>(sourceNode))
+	{
+		frontend::SourceUnit const& sourceUnit = m_compilerStack->ast(sourceName);
+		output += ReferenceCollector::collect(enumDef, sourceUnit, enumDef->name());
+	}
 	else
-		trace("semanticHighlight: not an identifier");
+		trace("semanticHighlight: not an identifier. "s + typeid(*sourceNode).name());
 
 	return output;
 }

@@ -89,6 +89,13 @@ bool ReferenceCollector::visit(frontend::Identifier const& _identifier)
 	return visitNode(_identifier);
 }
 
+bool ReferenceCollector::visit(frontend::IdentifierPath  const& _identifierPath)
+{
+	tryAddReference(_identifierPath.annotation().referencedDeclaration, _identifierPath.location());
+
+	return visitNode(_identifierPath);
+}
+
 bool ReferenceCollector::visit(frontend::MemberAccess const& _memberAccess)
 {
 	if (_memberAccess.annotation().referencedDeclaration == &m_declaration)

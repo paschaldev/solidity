@@ -37,6 +37,7 @@ public:
 
 	bool visit(frontend::ImportDirective const& _import) override;
 	bool visit(frontend::Identifier const& _identifier) override;
+	bool visit(frontend::IdentifierPath  const& _identifierPath) override;
 	bool visit(frontend::MemberAccess const& _memberAccess) override;
 	bool visitNode(frontend::ASTNode const& _node) override;
 

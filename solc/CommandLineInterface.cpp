@@ -1768,7 +1768,7 @@ void CommandLineInterface::handleAst()
 
 bool CommandLineInterface::serveLSP()
 {
-	auto const lspPortStr = m_args.count("lsp-port") != 0 ? m_args.at("lsp-port").as<string>() : "0"s;
+	auto const lspPortStr = m_args.count("lsp-port") != 0 ? m_args.at("lsp-port").as<string>() : ""s;
 
 	auto const traceLogger = [](string_view _msg) {
 		fprintf(stderr, "%s\n", string(_msg).c_str());
