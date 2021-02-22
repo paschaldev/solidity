@@ -27,7 +27,7 @@
 #include <string_view>
 #include <variant>
 
-namespace lsp {
+namespace solidity::lsp {
 
 // NOTE: https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/
 //

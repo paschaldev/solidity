@@ -15,7 +15,7 @@
 	along with solidity.  If not, see <http://www.gnu.org/licenses/>.
 */
 // SPDX-License-Identifier: GPL-3.0
-#include <liblsp/Transport.h>
+#include <libsolidity/lsp/Transport.h>
 
 #include <libsolutil/JSON.h>
 #include <libsolutil/Visitor.h>
@@ -35,7 +35,7 @@ using std::ostream;
 using std::string;
 using std::stringstream;
 
-namespace lsp {
+namespace solidity::lsp {
 
 JSONTransport::JSONTransport(istream& _in, ostream& _out, std::function<void(std::string_view)> _trace):
 	m_input{_in},

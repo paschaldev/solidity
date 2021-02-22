@@ -198,12 +198,7 @@ add_executable(soltest ${sources}
     ${yul_phaser_sources}
     ${lsp_sources}
 )
-target_link_libraries(soltest PRIVATE libsolc yul solidity smtutil solutil lsp Boost::boost yulInterpreter evmasm Boost::filesystem Boost::program_options Boost::unit_test_framework evmc)
-
-if(SOLIDITY_LANGUAGE_SERVER)
-	target_link_libraries(soltest PRIVATE lsp)
-endif()
-
+target_link_libraries(soltest PRIVATE libsolc yul solidity smtutil solutil Boost::boost yulInterpreter evmasm Boost::filesystem Boost::program_options Boost::unit_test_framework evmc)
 
 # Special compilation flag for Visual Studio (version 2019 at least affected)
 # in order to compile SolidityEndToEndTest.cpp, which is quite huge.

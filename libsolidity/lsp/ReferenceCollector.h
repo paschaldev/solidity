@@ -19,7 +19,7 @@
 
 #include <libsolidity/ast/ASTForward.h>
 #include <libsolidity/ast/ASTVisitor.h>
-#include <liblsp/Server.h>
+#include <libsolidity/lsp/LSPTypes.h>
 
 namespace solidity::lsp
 {
@@ -29,14 +29,14 @@ class ReferenceCollector: public frontend::ASTConstVisitor
 private:
 	frontend::Declaration const& m_declaration;
 	std::string const& m_sourceIdentifierName;
-	std::vector<::lsp::DocumentHighlight> m_result;
+	std::vector<DocumentHighlight> m_result;
 
 public:
 	ReferenceCollector(frontend::Declaration const& _declaration, std::string const& _sourceIdentifierName);
 
-	std::vector<::lsp::DocumentHighlight> take() { return std::move(m_result); }
+	std::vector<DocumentHighlight> take() { return std::move(m_result); }
 
-	static std::vector<::lsp::DocumentHighlight> collect(
+	static std::vector<DocumentHighlight> collect(
 		frontend::Declaration const* _declaration,
 		frontend::ASTNode const& _ast,
 		std::string const& _sourceIdentifierName = {}

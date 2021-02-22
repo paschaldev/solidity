@@ -15,7 +15,7 @@
 	along with solidity.  If not, see <http://www.gnu.org/licenses/>.
 */
 // SPDX-License-Identifier: GPL-3.0
-#include <liblsp/VFS.h>
+#include <libsolidity/lsp/VFS.h>
 
 #include <algorithm>
 #include <deque>
@@ -25,7 +25,7 @@ using namespace std;
 
 namespace std
 {
-	ostream& operator<<(ostream& _os, lsp::vfs::File const& _file)
+	ostream& operator<<(ostream& _os, solidity::lsp::vfs::File const& _file)
 	{
 		_os << '"' << _file.path() << "\": {languageId: " << _file.languageId();
 		_os << ", version: " << _file.version();
@@ -51,14 +51,14 @@ namespace std
 		return _os;
 	}
 
-	ostream& operator<<(ostream& _os, lsp::vfs::VFS const& _vfs)
+	ostream& operator<<(ostream& _os, solidity::lsp::vfs::VFS const& _vfs)
 	{
 		_os << "{size: " << _vfs.size() << "}";
 		return _os;
 	}
 }
 
-namespace lsp::vfs
+namespace solidity::lsp::vfs
 {
 
 File::File(string _path, string _languageId, int _version, string _text):

@@ -17,8 +17,8 @@
 // SPDX-License-Identifier: GPL-3.0
 #pragma once
 
-#include <liblsp/Range.h>
-#include <liblsp/TextBuffer.h>
+#include <libsolidity/lsp/Range.h>
+#include <libsolidity/lsp/TextBuffer.h>
 
 #include <deque>
 #include <map>
@@ -26,7 +26,7 @@
 #include <ostream>
 #include <vector>
 
-namespace lsp::vfs
+namespace solidity::lsp::vfs
 {
 
 using TextLines = std::deque<std::string>;
@@ -95,7 +95,7 @@ private:
 namespace std
 {
 
-ostream& operator<<(ostream& _os, lsp::vfs::File const& _file);
-ostream& operator<<(ostream& _os, lsp::vfs::VFS const& _vfs);
+ostream& operator<<(ostream& _os, solidity::lsp::vfs::File const& _file);
+ostream& operator<<(ostream& _os, solidity::lsp::vfs::VFS const& _vfs);
 
 } // end namespace std

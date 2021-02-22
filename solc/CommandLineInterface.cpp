@@ -29,6 +29,8 @@
 #include <libsolidity/interface/Version.h>
 #include <libsolidity/interface/FileReader.h>
 #include <libsolidity/lsp/LanguageServer.h>
+#include <libsolidity/lsp/TCPTransport.h>
+#include <libsolidity/lsp/Transport.h>
 #include <libsolidity/parsing/Parser.h>
 #include <libsolidity/ast/ASTJsonConverter.h>
 #include <libsolidity/ast/ASTJsonImporter.h>
@@ -38,10 +40,6 @@
 #include <libsolidity/interface/GasEstimator.h>
 #include <libsolidity/interface/DebugSettings.h>
 #include <libsolidity/interface/StorageLayout.h>
-
-#include <liblsp/Server.h>
-#include <liblsp/Transport.h>
-#include <liblsp/TcpTransport.h>
 
 #include <libyul/AssemblyStack.h>
 #include <libyul/optimiser/Suite.h>
@@ -1776,13 +1774,13 @@ bool CommandLineInterface::serveLSP()
 		fprintf(stderr, "%s\n", string(_msg).c_str());
 	};
 
-	unique_ptr<::lsp::Transport> transport;
+	unique_ptr<lsp::Transport> transport;
 	if (lspPortStr.empty())
-		transport = make_unique<::lsp::JSONTransport>(traceLogger);
+		transport = make_unique<lsp::JSONTransport>(traceLogger);
 	else
-		transport = make_unique<::lsp::TcpTransport>(stoi(lspPortStr), traceLogger);
+		transport = make_unique<lsp::TCPTransport>(stoi(lspPortStr), traceLogger);
 
-	solidity::lsp::LanguageServer languageServer(*transport, traceLogger);
+	lsp::LanguageServer languageServer(*transport, traceLogger);
 	return languageServer.run();
 }
 

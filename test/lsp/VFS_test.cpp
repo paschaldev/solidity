@@ -18,8 +18,8 @@
  * Unit tests for the address checksum.
  */
 
-#include <liblsp/VFS.h>
-#include <liblsp/TextBuffer.h>
+#include <libsolidity/lsp/VFS.h>
+#include <libsolidity/lsp/TextBuffer.h>
 #include <libsolutil/Exceptions.h>
 
 #include <test/Common.h>
@@ -28,7 +28,7 @@
 
 using namespace std;
 
-namespace lsp::test
+namespace solidity::lsp::test
 {
 
 BOOST_AUTO_TEST_SUITE(LSP)

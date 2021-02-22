@@ -141,10 +141,18 @@ set(sources
 	interface/StorageLayout.h
 	interface/Version.cpp
 	interface/Version.h
-	lsp/ReferenceCollector.cpp
-	lsp/ReferenceCollector.h
 	lsp/LanguageServer.cpp
 	lsp/LanguageServer.h
+	lsp/ReferenceCollector.cpp
+	lsp/ReferenceCollector.h
+	lsp/Range.h
+	lsp/TCPTransport.cpp
+	lsp/TCPTransport.h
+	lsp/TextBuffer.h
+	lsp/Transport.cpp
+	lsp/Transport.h
+	lsp/VFS.cpp
+	lsp/VFS.h
 	parsing/DocStringParser.cpp
 	parsing/DocStringParser.h
 	parsing/Parser.cpp
@@ -154,3 +162,8 @@ set(sources
 
 add_library(solidity ${sources})
 target_link_libraries(solidity PUBLIC yul evmasm langutil smtutil solutil Boost::boost)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	# needed for the TCPTransport, which is only compiled in debug builds.
+	target_link_libraries(solidity PUBLIC Boost::system Threads::Threads)
+endif()

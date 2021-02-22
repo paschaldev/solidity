@@ -39,7 +39,7 @@ ReferenceCollector::ReferenceCollector(
 {
 }
 
-std::vector<::lsp::DocumentHighlight> ReferenceCollector::collect(
+std::vector<DocumentHighlight> ReferenceCollector::collect(
 	frontend::Declaration const* _declaration,
 	frontend::ASTNode const& _ast,
 	std::string const& _sourceIdentifierName
@@ -114,12 +114,12 @@ void ReferenceCollector::addReference(solidity::langutil::SourceLocation const& 
 {
 	auto const [startLine, startColumn] = _location.source->translatePositionToLineColumn(_location.start);
 	auto const [endLine, endColumn] = _location.source->translatePositionToLineColumn(_location.end);
-	auto locationRange = ::lsp::Range{
+	auto locationRange = Range{
 		{startLine, startColumn},
 		{endLine, endColumn}
 	};
 
-	m_result.emplace_back(::lsp::DocumentHighlight{move(locationRange), ::lsp::DocumentHighlightKind::Text});
+	m_result.emplace_back(DocumentHighlight{move(locationRange), DocumentHighlightKind::Text});
 }
 
 }

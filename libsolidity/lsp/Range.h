@@ -19,7 +19,7 @@
 
 #include <ostream>
 
-namespace lsp {
+namespace solidity::lsp {
 
 /**
  * Position in a text document expressed as zero-based line and zero-based
@@ -104,14 +104,14 @@ struct Range
 
 namespace std
 {
-	inline ostream& operator<<(ostream& _os, lsp::Position const& _pos)
+	inline ostream& operator<<(ostream& _os, solidity::lsp::Position const& _pos)
 	{
 		// Print line/column numbers instead of indices!
 		_os << (_pos.line + 1) << ':' << (_pos.column + 1);
 		return _os;
 	}
 
-	inline ostream& operator<<(ostream& _os, lsp::Range const& _range)
+	inline ostream& operator<<(ostream& _os, solidity::lsp::Range const& _range)
 	{
 		_os << _range.start << ".." << _range.end;
 		return _os;

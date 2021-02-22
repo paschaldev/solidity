@@ -17,17 +17,17 @@
 // SPDX-License-Identifier: GPL-3.0
 #pragma once
 
-#include <liblsp/Transport.h>
+#include <libsolidity/lsp/Transport.h>
 
 #include <boost/asio.hpp>
 #include <optional>
 
-namespace lsp {
+namespace solidity::lsp {
 
-class TcpTransport: public Transport
+class TCPTransport: public Transport
 {
 public:
-	explicit TcpTransport(unsigned short _port, std::function<void(std::string_view)> = {});
+	explicit TCPTransport(unsigned short _port, std::function<void(std::string_view)> = {});
 
 	bool closed() const noexcept override;
 	std::optional<Json::Value> receive() override;

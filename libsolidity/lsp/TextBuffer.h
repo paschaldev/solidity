@@ -17,14 +17,14 @@
 // SPDX-License-Identifier: GPL-3.0
 #pragma once
 
-#include <liblsp/Range.h>
+#include <libsolidity/lsp/Range.h>
 #include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <utility>
 
-namespace lsp
+namespace solidity::lsp
 {
 
 /// Manages a text buffer.
@@ -94,20 +94,20 @@ private:
 
 namespace std
 {
-	inline ostream& operator<<(ostream& _os, lsp::TextBuffer const& _text)
+	inline ostream& operator<<(ostream& _os, solidity::lsp::TextBuffer const& _text)
 	{
 		_os << _text.data();
 		return _os;
 	}
 }
 
-namespace lsp
+namespace solidity::lsp
 {
-	inline size_t TextBuffer::toOffset(Position const& _position) const noexcept
+	inline size_t TextBuffer::toOffset(solidity::lsp::Position const& _position) const noexcept
 	{
 		// TODO: take care of Unicode.
 		size_t offset = 0;
-		Position current = {};
+		solidity::lsp::Position current = {};
 		while (current != _position && offset < m_buffer.size())
 		{
 			if (at(offset) != '\n')

@@ -15,9 +15,12 @@
 	along with solidity.  If not, see <http://www.gnu.org/licenses/>.
 */
 // SPDX-License-Identifier: GPL-3.0
-#include <liblsp/TcpTransport.h>
+#include <libsolidity/lsp/TCPTransport.h>
 
-namespace lsp {
+#include <optional>
+#include <string>
+
+namespace solidity::lsp {
 
 using std::nullopt;
 using std::optional;
@@ -25,7 +28,7 @@ using std::to_string;
 
 using namespace std::string_literals;
 
-TcpTransport::TcpTransport(unsigned short _port, std::function<void(std::string_view)> _trace):
+TCPTransport::TCPTransport(unsigned short _port, std::function<void(std::string_view)> _trace):
 	m_io_service(),
 	m_endpoint(boost::asio::ip::make_address("127.0.0.1"), _port),
 	m_acceptor(m_io_service),
@@ -40,12 +43,12 @@ TcpTransport::TcpTransport(unsigned short _port, std::function<void(std::string_
 	m_trace("Listening on tcp://127.0.0.1:"s + to_string(_port));
 }
 
-bool TcpTransport::closed() const noexcept
+bool TCPTransport::closed() const noexcept
 {
 	return !m_acceptor.is_open();
 }
 
-optional<Json::Value> TcpTransport::receive()
+optional<Json::Value> TCPTransport::receive()
 {
 	auto const clientClosed = [&]() { return !m_stream || !m_stream.value().good() || m_stream.value().eof(); };
 
@@ -72,19 +75,19 @@ optional<Json::Value> TcpTransport::receive()
 	return nullopt;
 }
 
-void TcpTransport::notify(std::string const& _method, Json::Value const& _params)
+void TCPTransport::notify(std::string const& _method, Json::Value const& _params)
 {
 	if (m_jsonTransport.has_value())
 		m_jsonTransport.value().notify(_method, _params);
 }
 
-void TcpTransport::reply(MessageId const& _id, Json::Value const& _result)
+void TCPTransport::reply(MessageId const& _id, Json::Value const& _result)
 {
 	if (m_jsonTransport.has_value())
 		m_jsonTransport.value().reply(_id, _result);
 }
 
-void TcpTransport::error(MessageId const& _id, ErrorCode _code, std::string const& _message)
+void TCPTransport::error(MessageId const& _id, ErrorCode _code, std::string const& _message)
 {
 	if (m_jsonTransport.has_value())
 		m_jsonTransport.value().error(_id, _code, _message);
